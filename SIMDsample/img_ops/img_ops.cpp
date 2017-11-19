@@ -198,7 +198,21 @@ unsigned int tankDemoThread(void *data)
 	int frame_counter = 0;
 	while(1) {
 		tankDemo.frame(&display, params->flags, params->mode, params->simStep);
-		display.set_title("MODE: %s (%d)", params->mode == SIMD_EMMX ? "mmx" : "serial", frame_counter++);
+
+		//display.set_title("MODE: %s (%d)", params->mode == SIMD_EMMX ? "mmx" : "serial", frame_counter++);
+		switch (params->mode)
+		{
+			case SIMD_NONE:
+				display.set_title("MODE: Serial (%d)", frame_counter++);
+				break;
+			case SIMD_EMMX:
+				display.set_title("MODE: EMMX (%d)", frame_counter++);
+				break;
+			case SIMD_EMMX_INTRINSICS:
+				display.set_title("MODE: EMMX Intrinsics (%d)", frame_counter++);
+				break;
+		}
+
 		if (display.is_keyESC()) {
 			break;
 		}
@@ -208,17 +222,32 @@ unsigned int tankDemoThread(void *data)
 
 void startTankDemoThreads(const char *background, const char *bubble, const char *attractors)
 {
-	BubbleThreadParams params[2];
-	HANDLE threadHandles[2];
+	const int NUM_THREADS = 3;
 
-	for (int i = 0; i < 2; i++) {
+	BubbleThreadParams params[NUM_THREADS];
+	HANDLE threadHandles[NUM_THREADS];
+
+	for (int i = 0; i < NUM_THREADS; i++) {
 		params[i].backgroundImageName = background;
 		params[i].bubbleImageName = bubble;
 		params[i].attractorImageName = attractors;
 		params[i].flags = TankDemo::DRAW_BUBBLES;
 		params[i].simStep = 0.1f;
 		params[i].nBubbles = 500;
-		params[i].mode = i == 0 ? SIMD_EMMX : SIMD_NONE;
+
+		switch (i)
+		{
+			case 0:
+				params[i].mode = SIMD_NONE;
+				break;
+			case 1:
+				params[i].mode = SIMD_EMMX;
+				break;
+			case 2:
+				params[i].mode = SIMD_EMMX_INTRINSICS;
+				break;
+		}
+
 		threadHandles[i] = CreateThread(NULL, 0, LPTHREAD_START_ROUTINE(tankDemoThread), &params[i], 0, &params[i].threadId);
 		if (threadHandles[i] == NULL) {
 			MessageBox(NULL, "Couldn't start thread", "FATAL", MB_OK);
@@ -226,9 +255,9 @@ void startTankDemoThreads(const char *background, const char *bubble, const char
 		}
 	}
 
-	WaitForMultipleObjects(2, threadHandles, FALSE, INFINITE);
+	WaitForMultipleObjects(NUM_THREADS, threadHandles, FALSE, INFINITE);
 
-	for (int i = 0; i < 2; i++) TerminateThread(threadHandles[i], 0);
+	for (int i = 0; i < NUM_THREADS; i++) TerminateThread(threadHandles[i], 0);
 }
 
 

@@ -344,8 +344,23 @@ bits rather than pixels, which is why the increment amount is 16 rather than 1.
 
 ----- Execution Speed Comparison -----
 
+The three SIMD modes as ranked from fastest to slowest **when running in DEBUG mode** 
+(i.e., assembly optimizations off) are as follows:
 
+    1. EMMX
+    2. EMMX Intrinsics
+    3. Serial
 
+The EMMX and EMMX intrinsics are faster than the serial because they make use of 
+assembly-level optimizations that the serial C code does not. The EMMX is likely faster 
+because it does not have the overhead of additional function calls like the intrinsics 
+do. Additionally, the instrinsics do not have all possible optimizations applied to them, 
+due to running in debug mode.
+
+**When running in RELEASE mode** (i.e., assembly optimizations on), the performances of 
+the EMMX and EMMX intrinsics are equivalent, since the intrinsic calls are optimized 
+in the build process. The serial implementation remains the slowest by a significant 
+margin.
 
 ==========================================================================================
     ## Part C

@@ -12,6 +12,7 @@
     TABLE OF CONTENTS
     
     ## Part A
+    ## Part B
     ## Part C
     ## Part D
     
@@ -361,6 +362,12 @@ due to running in debug mode.
 the EMMX and EMMX intrinsics are equivalent, since the intrinsic calls are optimized 
 in the build process. The serial implementation remains the slowest by a significant 
 margin.
+
+
+==========================================================================================
+    ## Part B
+==========================================================================================
+ 
 
 ==========================================================================================
     ## Part C

@@ -47,7 +47,90 @@ processed next.
 
 ----- Mode: SIMD_EMMX_INTRINSICS -----
 
+            for (unsigned x = X0; x < X1; x += 16) {
 
+The for loop for the intrinsic explanation is slightly different since it loops over bits 
+instead of pixels. Thus the increment value is 16 instead of 1.
+
+
+				register __m128i s0, s1, d0, d1, a0, a1, r0, r1, zero;
+				register __m128i diff0, tmp0, diff1, tmp1, t;
+				zero = _mm_setzero_si128();
+
+The first two lines here declare local variables for manipulating register values. The 
+third initializes the variable zero to a 128-bit zero value.
+
+				t = _mm_loadu_si128((__m128i *) pSrc[3]);
+				a0 = _mm_unpacklo_epi8(t, zero);
+				a1 = _mm_unpackhi_epi8(t, zero);
+
+The first line here loads the source image's alpha value into the register t as a 128-bit 
+number. The second line takes the lower 64 bits from t and zero and combines them in an 
+ABAB pattern, then stores them in a0. The third line does the same, but for the *upper* 64 
+bits from each, storing the result in a1.
+
+                t = _mm_loadu_si128((__m128i *) pDst[(comp)]);                      \
+                d0 = _mm_unpacklo_epi8(t, zero);                                    \
+                d1 = _mm_unpackhi_epi8(t, zero);                                    \
+                t = _mm_loadu_si128((__m128i *) pSrc[(comp)]);                      \
+                _mm_storeu_si128(                                           // Store result value.
+                                    (__m128i *) pDst[(comp)],                   // Value is stored in destination color channel. 
+                                    _mm_packus_epi16(                           // Combine two 128-bit signed sources into a 128-bit unsigned result.
+                                        _mm_srli_epi16(                             // Bitwise right-shift first parameter by second parameter value.
+                                            _mm_add_epi16(                              // Add the two parameters.
+                                                _mm_mullo_epi16(                            // Multiply the two parameters.
+                                                    _mm_unpacklo_epi8(                          // Combine the lower 64 bits of the two parameters in a bitwise ABAB pattern.
+                                                        t,                                          // Source image color channel value.
+                                                        zero),                                      // Zero
+                                                    a0),                                        // ABAB-combined lower 64 bits from source image alpha and zero. 
+                                                _mm_mullo_epi16(                            // Multiply the two parameters.
+                                                    _mm_sub_epi16(                              // Subtracts the second parameter from the first.
+                                                        ff,                                         // Maximum value for 128-bit number.
+                                                        a0),                                        // ABAB-combined lower 64 bits from source image alpha and zero.
+                                                    d0)),                                       // ABAB-combined lower 64 bits from destination image color channel and zero.
+                                            8),                                         // Right-shift by 8 bits (i.e., divide by 256).
+                                        _mm_srli_epi16(                             // Bitwise right-shift first parameter by second parameter value.
+                                            _mm_add_epi16(                              // Add the two parameters.
+                                                _mm_mullo_epi16(                            // Multiply the two parameters.
+                                                    _mm_unpackhi_epi8(                          // Combine the upper 64 bits of the two parameters in a bitwise ABAB pattern.
+                                                        t,                                          // Source image color channel value.
+                                                        zero),                                      // Zero
+                                                    a1),                                        // ABAB-combined upper 64 bits from source image alpha and zero. 
+                                                _mm_mullo_epi16(                            // Multiply the two parameters
+                                                    _mm_sub_epi16(                              // Subtract the second parameter from the first.
+                                                        ff,                                         // Maximum value for 128-bit number.
+                                                        a1),                                        // ABAB-combined upper 64 bits from source image alpha and zero.
+                                                    d1)),                                       // ABAB-combined upper 64 bits from destination image color channel and zero.
+                                            8)))                                        // Right-shift by 8 bits (i.e., divide by 256).
+
+The above lines are executed for each color channel, with the comp variable indicating 
+the index of the color channel. The first three statements do the same as the three lines 
+discussed previously to this (load value into t, load first and last 64 bits into d0 and 
+d1 after combining with zero bits in ABAB pattern) for the color channel from the 
+destination image.
+
+The fourth statement loads the value of the corresponding color channel from the source 
+image into t.
+
+The last statement is commented in detail above. To summarize it, for the first 
+and last 64 bits of the result, the corresponding color channel is taken from the source 
+and destination images and scaled according to the source image's alpha. These two values 
+(from the source and destination image) are then added. The sum is then bitwise 
+right-shifted by 8. Then the first and last 64 bits are combined to create the resulting 
+128 bit value.
+
+				pSrc[0] += 16;
+				pSrc[1] += 16;
+				pSrc[2] += 16;
+				pSrc[3] += 16;
+
+				pDst[0] += 16;
+				pDst[1] += 16;
+				pDst[2] += 16;
+
+The last few line of code here simply increment the pixel coordinates for the source and 
+destination images. As previously mentioned, the intrinsic for loop operates on bits 
+rather than pixels, which is why the increment values are 16 in each case instead of one. 
     
 ==========================================================================================
     ## Part C

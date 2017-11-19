@@ -1,0 +1,61 @@
+==========================================================================================
+    COMP 8551 Assignment 03
+    
+    Erick Fernandez de Arteaga, A00925871
+    John Janzen,                A00844492
+
+    Version 0.1.0
+    
+==========================================================================================
+
+------------------------------------------------------------------------------------------
+    TABLE OF CONTENTS
+    
+    ## Part A
+    ## Part C
+    ## Part D
+    
+------------------------------------------------------------------------------------------
+
+==========================================================================================
+    ## Part A
+==========================================================================================
+The blitBlend() function produces the result image obtained by blending the two 
+component images. Regardless of the SIMD mode, the function begins by determining the 
+area of the image to be blended and beginning a for loop that will execute for every 
+line of pixels within this area. Descriptions of the details for each mode follow: 
+
+----- Mode: SIMD_NONE -----
+
+In the basic serial implementation, for each pixel in the blend area, each of the three 
+color channels is processed in the following way:
+
+				diff = *pSrc[0] - *pDst[0];
+				tmp = short(*pSrc[3] * diff) >> 8;
+				*pDst[0] = tmp + *pDst[0];
+
+What this does is to take the difference between the two images for that color channel, 
+scale it by the source image's alpha value, bitwise shift right by 8 (essentially 
+dividing the number by 2^8, or 256, diminshing the influence of the source image on the 
+result image). Lastly, the resulting value is added to the corresponding color channel for 
+the result image.
+
+Once the resulting color channels have been determined, the coordinate values for the 
+source and destination images are updated so that the next pixel location in each can be 
+processed next.
+
+
+----- Mode: SIMD_EMMX_INTRINSICS -----
+
+
+    
+==========================================================================================
+    ## Part C
+==========================================================================================
+
+
+==========================================================================================
+    ## Part D
+==========================================================================================
+    
+    

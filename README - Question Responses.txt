@@ -367,7 +367,11 @@ margin.
 ==========================================================================================
     ## Part B
 ==========================================================================================
- 
+ When I switched the alpha channel from the source picture to the destination picture, it caused
+ the bubble image transparency to go black. interestingly enough, when I transfered the build to
+ the release version. The bubbles acutally were alomst completely invisible other than a small 
+ bit of shading. Furthermore, the system seemed to run faster as the numbers above were increasing
+ at a faster rate.
 
 ==========================================================================================
     ## Part C

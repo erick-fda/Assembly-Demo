@@ -13,7 +13,7 @@
 
 void blitBlend( UCImg &src, UCImg &dst, unsigned int dstXOffset, unsigned int dstYOffset, SimdMode simdMode)
 {
-	if (src.spectrum() != 4) throw cimg_library::CImgException("blitBlend: Src image is missing ALPHA channel");
+	if (dst.spectrum() != 4) throw cimg_library::CImgException("blitBlend: DST image is missing ALPHA channel");
 
 	// calcualte our SIMD blend area (defined by X0, Y0 to X1, Y1). Take into account alignment restrictions;
 
@@ -33,7 +33,7 @@ void blitBlend( UCImg &src, UCImg &dst, unsigned int dstXOffset, unsigned int ds
 		pSrc[0] = src.data(0, srcLine, 0, 0);
 		pSrc[1] = src.data(0, srcLine, 0, 1);
 		pSrc[2] = src.data(0, srcLine, 0, 2);
-		pSrc[3] = src.data(0, srcLine, 0, 3);
+		pSrc[3] = dst.data(0, srcLine, 0, 3);
 
 		unsigned char *pDst[4];
 		pDst[0] = dst.data(X0, y, 0, 0);

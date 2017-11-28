@@ -376,10 +376,112 @@ margin.
 ==========================================================================================
     ## Part C
 ==========================================================================================
+This is the Dissasembly code for passing an object as a _value_ {
+		std::cout << simpleFunction(f);
+	00C618B1  mov         eax,dword ptr [f]  
+	00C618B4  push        eax  
+	00C618B5  call        simpleFunction (0C6118Bh)  
+	00C618BA  add         esp,4  
+	00C618BD  mov         esi,esp  
+	00C618BF  push        eax  
+	00C618C0  mov         ecx,dword ptr [_imp_?cout@std@@3V?$basic_ostream@DU?$char_traits@D@std@@@1@A (0C6C098h)]  
+	00C618C6  call        dword ptr [__imp_std::basic_ostream<char,std::char_traits<char> >::operator<< (0C6C09Ch)]  
+	00C618CC  cmp         esi,esp  
+	00C618CE  call        __RTC_CheckEsp (0C61136h)  
+}
 
+Thi is the Dissasembly code for passing an object by _reference_ {
+		std::cout << simpleFunction(f);
+	010D1891  lea         eax,[f]  
+	010D1894  push        eax  
+	010D1895  call        simpleFunction (010D1005h)  
+	010D189A  add         esp,4  
+	010D189D  mov         esi,esp  
+	010D189F  push        eax  
+	010D18A0  mov         ecx,dword ptr [_imp_?cout@std@@3V?$basic_ostream@DU?$char_traits@D@std@@@1@A (010DC098h)]  
+	010D18A6  call        dword ptr [__imp_std::basic_ostream<char,std::char_traits<char> >::operator<< (010DC09Ch)]  
+	010D18AC  cmp         esi,esp  
+	010D18AE  call        __RTC_CheckEsp (010D113Bh)
+}
+
+The main difference between each of the examples is that the pass by value passes the object
+f as a dword pointer. Where as the passing by reference loads by the effective address of the object 
+and passes that to the function.
 
 ==========================================================================================
     ## Part D
 ==========================================================================================
-    
-    
+NO INLINE {
+		std::cout << f.simpleFunction();
+	00007FF6F82A1944  lea         rcx,[f]  
+	00007FF6F82A1948  call        Foo::simpleFunction (07FF6F82A10BEh)  
+	00007FF6F82A194D  mov         edx,eax  
+	00007FF6F82A194F  mov         rcx,qword ptr [__imp_std::cout (07FF6F82B0150h)]  
+	00007FF6F82A1956  call        qword ptr [__imp_std::basic_ostream<char,std::char_traits<char> >::operator<< (07FF6F82B0158h)]  
+		int Foo::simpleFunction() {
+	00007FF6F82A1770  mov         qword ptr [rsp+8],rcx  
+	00007FF6F82A1775  push        rbp  
+	00007FF6F82A1776  push        rdi  
+	00007FF6F82A1777  sub         rsp,128h  
+	00007FF6F82A177E  mov         rbp,rsp  
+	00007FF6F82A1781  mov         rdi,rsp  
+	00007FF6F82A1784  mov         ecx,4Ah  
+	00007FF6F82A1789  mov         eax,0CCCCCCCCh  
+	00007FF6F82A178E  rep stos    dword ptr [rdi]  
+	00007FF6F82A1790  mov         rcx,qword ptr [rsp+148h]  
+		int i = 5;
+	00007FF6F82A1798  mov         dword ptr [i],5  
+		int j = 2;
+	00007FF6F82A179F  mov         dword ptr [j],2  
+		int k = i + j;
+	00007FF6F82A17A6  mov         eax,dword ptr [j]  
+	00007FF6F82A17A9  mov         ecx,dword ptr [i]  
+	00007FF6F82A17AC  add         ecx,eax  
+	00007FF6F82A17AE  mov         eax,ecx  
+	00007FF6F82A17B0  mov         dword ptr [k],eax  
+		return k;
+	00007FF6F82A17B3  mov         eax,dword ptr [k]  
+	}
+	00007FF6F82A17B6  lea         rsp,[rbp+128h]  
+	00007FF6F82A17BD  pop         rdi  
+	00007FF6F82A17BE  pop         rbp  
+	00007FF6F82A17BF  ret  
+}
+
+INLINE {
+		std::cout << f.simpleFunction();
+	00007FF6C3DD1944  lea         rcx,[f]  
+	00007FF6C3DD1948  call        Foo::simpleFunction (07FF6C3DD10BEh)  
+	00007FF6C3DD194D  mov         edx,eax  
+	00007FF6C3DD194F  mov         rcx,qword ptr [__imp_std::cout (07FF6C3DE0150h)]  
+	00007FF6C3DD1956  call        qword ptr [__imp_std::basic_ostream<char,std::char_traits<char> >::operator<< (07FF6C3DE0158h)]  
+		inline int Foo::simpleFunction() {
+	00007FF6C3DD1890  mov         qword ptr [rsp+8],rcx  
+	00007FF6C3DD1895  push        rbp  
+	00007FF6C3DD1896  push        rdi  
+	00007FF6C3DD1897  sub         rsp,128h  
+	00007FF6C3DD189E  mov         rbp,rsp  
+	00007FF6C3DD18A1  mov         rdi,rsp  
+	00007FF6C3DD18A4  mov         ecx,4Ah  
+	00007FF6C3DD18A9  mov         eax,0CCCCCCCCh  
+	00007FF6C3DD18AE  rep stos    dword ptr [rdi]  
+	00007FF6C3DD18B0  mov         rcx,qword ptr [rsp+148h]  
+		int i = 5;
+	00007FF6C3DD18B8  mov         dword ptr [i],5  
+		int j = 2;
+	00007FF6C3DD18BF  mov         dword ptr [j],2  
+		int k = i + j;
+	00007FF6C3DD18C6  mov         eax,dword ptr [j]  
+	00007FF6C3DD18C9  mov         ecx,dword ptr [i]  
+	00007FF6C3DD18CC  add         ecx,eax  
+	00007FF6C3DD18CE  mov         eax,ecx  
+	00007FF6C3DD18D0  mov         dword ptr [k],eax  
+		return k;
+	00007FF6C3DD18D3  mov         eax,dword ptr [k]  
+	}
+	00007FF6C3DD18D6  lea         rsp,[rbp+128h]  
+	00007FF6C3DD18DD  pop         rdi  
+	00007FF6C3DD18DE  pop         rbp  
+	00007FF6C3DD18DF  ret  
+}
+
